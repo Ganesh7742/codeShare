@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShareTheCode - Real-time Live Code Broadcasting</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💻</text></svg>">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Vanilla CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Monaco Editor Loader -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
+</head>
+<body>
+    <!-- Floating Reactions Container -->
+    <div id="reactions-container" class="reactions-container"></div>
+
+    <!-- Notification Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Landing Screen -->
+    <div id="landing-screen" class="screen active">
+        <div class="glass-card landing-card">
+            <div class="logo-container">
+                <div class="logo-glow"></div>
+                <i data-lucide="code-2" class="logo-icon"></i>
+                <h1>ShareTheCode</h1>
+                <p>Broadcast your code live or watch in real-time</p>
+            </div>
+
+            <div class="form-group">
+                <label for="username-input">Your Name</label>
+                <div class="input-wrapper">
+                    <i data-lucide="user"></i>
+                    <input type="text" id="username-input" placeholder="e.g. Alice" maxlength="20">
+                </div>
+            </div>
+
+            <div class="tab-container">
+                <button id="tab-presenter" class="tab-btn active">
+                    <i data-lucide="tv"></i>
+                    Create Room (Presenter)
+                </button>
+                <button id="tab-viewer" class="tab-btn">
+                    <i data-lucide="users"></i>
+                    Join Room (Viewer)
+                </button>
+            </div>
+
+            <div class="form-group" id="room-id-group">
+                <label for="room-id-input" id="room-id-label">Room Code</label>
+                <div class="input-wrapper">
+                    <i data-lucide="key-round"></i>
+                    <input type="text" id="room-id-input" placeholder="Enter Room Code">
+                </div>
+            </div>
+
+            <button id="action-btn" class="primary-btn">
+                <span>Start Broadcasting</span>
+                <i data-lucide="arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Workspace Screen -->
+    <div id="workspace-screen" class="screen">
+        <header class="workspace-header">
+            <div class="header-left">
+                <div class="logo-mini">
+                    <i data-lucide="code-2"></i>
+                    <span>ShareTheCode</span>
+                </div>
+                <div class="divider"></div>
+                <div class="room-badge">
+                    <span class="label">ROOM:</span>
+                    <span id="room-id-display" class="value">...</span>
+                    <button id="copy-room-btn" title="Copy Invite Link" class="icon-btn">
+                        <i data-lucide="copy" class="small-icon"></i>
+                    </button>
+                </div>
+                <div id="status-badge" class="status-badge presenter">
+                    <span class="pulse-dot"></span>
+                    <span class="text">Broadcasting</span>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <div class="user-count">
+                    <i data-lucide="users"></i>
+                    <span id="user-count-display">1</span>
+                </div>
+                <button id="exit-btn" class="danger-btn">
+                    <i data-lucide="log-out"></i>
+                    Leave
+                </button>
+            </div>
+        </header>
+
+        <div class="workspace-container">
+            <!-- Left: Code Editor Area -->
+            <main class="editor-area">
+                <div class="editor-toolbar">
+                    <div class="toolbar-left">
+                        <i data-lucide="file-code"></i>
+                        <span>Live Workspace</span>
+                    </div>
+                    <div class="toolbar-right">
+                        <span id="editor-status" class="editor-status">
+                            <i data-lucide="user-check"></i> Presenting
+                        </span>
+                        <div class="cursor-position" id="cursor-pos-display">Ln 1, Col 1</div>
+                    </div>
+                </div>
+                <!-- Monaco Container -->
+                <div id="editor-container" class="editor-container"></div>
+            </main>
+
+            <!-- Right: Interactive Sidebar -->
+            <aside class="sidebar">
+                <!-- Active Members Section -->
+                <div class="sidebar-section members-section">
+                    <div class="section-header">
+                        <i data-lucide="users"></i>
+                        <h3>Active Members (<span id="user-count-sidebar">0</span>)</h3>
+                    </div>
+                    <div class="members-list" id="members-list">
+                        <!-- Members rendered dynamically -->
+                    </div>
+                </div>
+
+                <!-- Chat Section -->
+                <div class="sidebar-section chat-section">
+                    <div class="section-header">
+                        <i data-lucide="message-square"></i>
+                        <h3>Live Chat</h3>
+                    </div>
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="chat-system-message">Welcome to the room chat!</div>
+                    </div>
+                    <form id="chat-form" class="chat-input-area">
+                        <input type="text" id="chat-input" placeholder="Type a message..." autocomplete="off">
+                        <button type="submit" class="chat-send-btn">
+                            <i data-lucide="send"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Reactions Section -->
+                <div class="sidebar-section reactions-section">
+                    <div class="section-header">
+                        <i data-lucide="sparkles"></i>
+                        <h3>Live Reactions</h3>
+                    </div>
+                    <div class="reactions-buttons">
+                        <button class="reaction-btn" data-reaction="👍">👍</button>
+                        <button class="reaction-btn" data-reaction="❤️">❤️</button>
+                        <button class="reaction-btn" data-reaction="👏">👏</button>
+                        <button class="reaction-btn" data-reaction="🔥">🔥</button>
+                        <button class="reaction-btn" data-reaction="🎉">🎉</button>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- App JS -->
+    <script src="js/app.js"></script>
+</body>
+</html>
